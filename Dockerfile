@@ -1,17 +1,38 @@
+#########################
+# To build:
+#########################
+
 # docker build -t usd_ubuntu_build --network=host --progress=plain .
-# docker run -it --network=host usd_ubuntu_build
-# docker run -it --network=host --gpus=all usd_ubuntu_build
 
-# Copy contents out when done:
+##########################
+# To test on host machine
+##########################
+
 # rm -rf /tmp/usd_build && id=$(docker create usd_ubuntu_build) && docker cp $id:/tmp/usd_build /tmp/usd_build && docker rm -v $id
-
-# To test:
-# cd /tmp/usd_build/USD
 # export USD_BUILD_ROOT=/tmp/usd_build
 # export PATH="${USD_BUILD_ROOT}/USD/_install/bin:${PATH}"
 # export PYTHONPATH="${USD_BUILD_ROOT}/USD/_install/lib/python${PYTHONPATH:+:${PYTHONPATH}}"
 # cd "${USD_BUILD_ROOT}/USD/_install/build/USD"
 # /tmp/usd_build/miniconda3/bin/conda run --no-capture-output -n usd37 ctest --output-on-failure -R '^testUsdImagingGLInstancing_nestedInstance$'
+
+
+##########################
+# To test inside of docker
+##########################
+
+# need:
+#   - nvidia-container-runtime installed
+#   - access to x11 on host
+#      - `xhost +local:root` or similar
+#      - see: http://wiki.ros.org/docker/Tutorials/GUI
+
+# Then run:
+
+# docker run -it --network=host --gpus=all -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all -v /tmp/.X11-unix:/tmp/.X11-unix --env DISPLAY -w /tmp/usd_build/USD/_install/build/USD --cidfile usd_docker_container_id usd_ubuntu_build ctest --output-on-failure -R '^testUsdImagingGLInstancing_nestedInstance$'
+# docker cp $(cat usd_docker_container_id):/tmp/usd_build/USD/_install/build/USD/Testing/Failed-Diffs Failed-Diffs
+
+# ...then inspect the contents of the Failed-Diffs dir to see the baseline + result images
+
 
 FROM ubuntu:22.04
 
@@ -62,4 +83,4 @@ ENV \
  PATH="${USD_BUILD_ROOT}/USD/_install/bin:${PATH}" \
  PYTHONPATH="${USD_BUILD_ROOT}/USD/_install/lib/python:${PYTHONPATH}"
 
-ENTRYPOINT ["/tmp/usd_build/miniconda3/bin/conda", "run", "--no-capture-output", "-n", "usd37", "/bin/bash"]
+ENTRYPOINT ["/tmp/usd_build/miniconda3/bin/conda", "run", "--no-capture-output", "-n", "usd37"]
