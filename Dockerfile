@@ -1,4 +1,13 @@
 #########################
+# Description
+#########################
+
+# This Dockerfile can be used to build / test a test failure in:
+#   testUsdImagingGLInstancing_nestedInstance
+# See this issue for more details:
+#   https://github.com/PixarAnimationStudios/USD/issues/2097
+
+#########################
 # To build:
 #########################
 
