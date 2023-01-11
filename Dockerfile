@@ -30,15 +30,17 @@
 ##########################
 
 # need:
-#   - nvidia-container-runtime installed
+#   - nvidia-docker2 installed
+#      - see: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian
 #   - access to x11 on host
 #      - `xhost +local:root` or similar
 #      - see: http://wiki.ros.org/docker/Tutorials/GUI
 
 # Then run:
 
-# docker run -it --network=host --gpus=all -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all -v /tmp/.X11-unix:/tmp/.X11-unix --env DISPLAY -w /tmp/usd_build/USD/_install/build/USD --cidfile usd_docker_container_id usd_ubuntu_build ctest --output-on-failure -R '^testUsdImagingGLInstancing_nestedInstance$'
-# docker cp $(cat usd_docker_container_id):/tmp/usd_build/USD/_install/build/USD/Testing/Failed-Diffs Failed-Diffs
+# rm usd_docker_container_id
+# docker run -it --network=host --gpus=all -v /tmp/.X11-unix:/tmp/.X11-unix --env DISPLAY -w /tmp/usd_build/USD/_install/build/USD --cidfile usd_docker_container_id usd_ubuntu_build ctest --output-on-failure -R '^testUsdImagingGLInstancing_nestedInstance$'
+# docker cp $(cat usd_docker_container_id):/tmp/usd_build/USD/_install/build/USD/Testing/Failed-Diffs Failed-Diffs && docker container rm $(cat usd_docker_container_id) && rm usd_docker_container_id
 
 # ...then inspect the contents of the Failed-Diffs dir to see the baseline + result images
 
@@ -89,6 +91,8 @@ RUN python build_scripts/build_usd.py \
     --build-args boost,define=PTHREAD_STACK_MIN=16384
 
 ENV \
+ NVIDIA_DRIVER_CAPABILITIES=all \
+ NVIDIA_VISIBLE_DEVICES=all \
  PATH="${USD_BUILD_ROOT}/USD/_install/bin:${PATH}" \
  PYTHONPATH="${USD_BUILD_ROOT}/USD/_install/lib/python:${PYTHONPATH}"
 
