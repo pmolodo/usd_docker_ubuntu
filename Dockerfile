@@ -47,11 +47,9 @@ RUN pip install --no-input --no-cache-dir \
 
 RUN git clone https://github.com/PixarAnimationStudios/USD.git "${USD_BUILD_ROOT}/USD" \
   && cd "${USD_BUILD_ROOT}/USD" \
-  && git checkout -B docker_build 5ea7a7aae01d6934677137b2db386223f66bd53d
+  && git checkout -B docker_build 48b3d1452bed1c2cb4d3fe94360bd6d85c133dc5
 
 WORKDIR "${USD_BUILD_ROOT}/USD"
-
-RUN sed -i 's/#include <shared_mutex>/#include <mutex>\n#include <shared_mutex>/' pxr/usd/usd/zipFile.cpp
 
 ARG CXXFLAGS=-DPTHREAD_STACK_MIN=16384
 
